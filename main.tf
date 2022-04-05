@@ -1,14 +1,7 @@
-module "aws_config_label" {
-  source  = "cloudposse/label/null"
-  version = "0.25.0"
-
-  attributes = ["aws-config"]
-  context    = module.this.context
-}
 
 module "storage" {
-  source  = "cloudposse/s3-log-storage/aws"
-  version = "0.26.0"
+  source  = "registry.terraform.io/cloudposse/s3-log-storage/aws"
+  version = "0.27.0"
   count   = module.this.enabled ? 1 : 0
 
   acl                                    = "private"
@@ -30,6 +23,7 @@ module "storage" {
   block_public_policy                    = true
   ignore_public_acls                     = true
   restrict_public_buckets                = true
+  access_log_bucket_prefix               = var.access_log_bucket_prefix
   access_log_bucket_name                 = var.access_log_bucket_name
   allow_ssl_requests_only                = var.allow_ssl_requests_only
   policy                                 = join("", data.aws_iam_policy_document.aws_config_bucket_policy.*.json)
@@ -38,9 +32,7 @@ module "storage" {
   bucket_notifications_type    = var.bucket_notifications_type
   bucket_notifications_prefix  = var.bucket_notifications_prefix
 
-  tags       = module.this.tags
-  attributes = ["aws-config"]
-  context    = module.this.context
+  context = module.this.context
 }
 
 data "aws_iam_policy_document" "aws_config_bucket_policy" {
@@ -108,6 +100,6 @@ data "aws_partition" "current" {}
 locals {
   current_account_id = data.aws_caller_identity.current.account_id
   config_spn         = "config.amazonaws.com"
-  s3_bucket_arn      = format("arn:%s:s3:::%s", data.aws_partition.current.id, module.aws_config_label.id)
+  s3_bucket_arn      = format("arn:%s:s3:::%s", data.aws_partition.current.id, module.this.id)
   s3_object_prefix   = format("%s/AWSLogs/*", local.s3_bucket_arn)
 }
