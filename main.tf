@@ -1,7 +1,7 @@
 
 module "storage" {
   source  = "registry.terraform.io/cloudposse/s3-log-storage/aws"
-  version = "0.27.0"
+  version = "0.28.0"
   count   = module.this.enabled ? 1 : 0
 
   acl                                    = "private"
