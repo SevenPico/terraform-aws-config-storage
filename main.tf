@@ -38,6 +38,14 @@ data "aws_iam_policy_document" "aws_config_bucket_policy" {
       identifiers = ["config.amazonaws.com"]
     }
 
+    dynamic "principals" {
+      for_each = var.child_accounts
+      content {
+        type = "AWS"
+        identifiers = [each.value]
+      }
+    }
+
     effect  = "Allow"
     actions = ["s3:GetBucketAcl"]
 
@@ -52,6 +60,14 @@ data "aws_iam_policy_document" "aws_config_bucket_policy" {
     principals {
       type        = "Service"
       identifiers = ["config.amazonaws.com"]
+    }
+
+    dynamic "principals" {
+      for_each = var.child_accounts
+      content {
+        type = "AWS"
+        identifiers = [each.value]
+      }
     }
 
     effect  = "Allow"
@@ -81,6 +97,31 @@ data "aws_iam_policy_document" "aws_config_bucket_policy" {
 
     resources = [local.s3_object_prefix]
   }
+
+
+  dynamic "statement" {
+    for_each = var.child_accounts
+    content {
+      sid = "AWSConfigBucketDelivery${each.value}"
+
+      principals {
+        type = "AWS"
+        identifiers = [each.value]
+      }
+
+      effect  = "Allow"
+      actions = ["s3:PutObject"]
+
+      condition {
+        test     = "StringLike"
+        variable = "s3:x-amz-acl"
+        values   = ["bucket-owner-full-control"]
+      }
+
+      resources = ["${local.s3_bucket_arn}/${each.key}/*"]
+    }
+  }
+
 }
 
 #-----------------------------------------------------------------------------------------------------------------------

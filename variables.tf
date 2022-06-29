@@ -1,9 +1,3 @@
-variable "policy" {
-  type        = string
-  description = "A valid bucket policy JSON document. Note that if the policy document is not specific enough (but still valid), Terraform may view the policy as constantly changing in a terraform plan. In this case, please make sure you use the verbose/specific version of the policy"
-  default     = ""
-}
-
 variable "force_destroy" {
   type        = bool
   description = "(Optional, Default:false ) A boolean that indicates all objects should be deleted from the bucket so that the bucket can be destroyed without error. These objects are not recoverable"
@@ -61,4 +55,9 @@ variable "bucket_notifications_prefix" {
 variable "lifecycle_configuration_rules" {
   type = any
   default = []
+}
+
+variable "child_accounts" {
+  type = map(string)
+  default = {}
 }
